@@ -11,7 +11,7 @@ router.get('/workouts', (req, res) => {
         });
     });
 router.get('/workouts/range', (req, res) => {
-    Workout.find({}).then((dbWorkout) => {
+    Workout.aggregate([{$addFields: {totalDuration: {$sum: '$exercises.duration'}}}]).then((dbWorkout) => {
             res.json(dbWorkout);
         })
         .catch(err => {
