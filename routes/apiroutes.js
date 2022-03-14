@@ -35,7 +35,7 @@ router.get('/api/workouts/range', (req, res) => {
             console.log(dbWorkouts);
             res.json(dbWorkouts);
         })
-        .catch(err => {
+        .catch((err) => {
             res.json(err);
         });
     });
@@ -45,23 +45,23 @@ router.post('/api/workouts', (req, res) => {
         .then((dbWorkout) => {
              res.json(dbWorkout);
          })
-        .catch(err => {
+        .catch((err) => {
              res.json(err);
          });
     });
 
-router.put('/api/workouts/:id', ({ body, params }, req, res) => {
+router.put('/api/workouts/:id', ({ body, params }, res) => {
     Workout.findByIdAndUpdate(
         params.id,
-            { $push: { exercises: req.body } },
+            { $push: { exercises: body } },
             // runValidators check to see if new exercises meet schema requirements
             { new: true, runValidators: true }
         )
         .then((dbWorkout) => {
             res.json(dbWorkout);
         })
-        .catch(err => {
-            res.json(err);
+        .catch((err) => {
+            res.json(err)
         });
 });
 
