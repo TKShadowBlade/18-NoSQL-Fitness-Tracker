@@ -1,42 +1,67 @@
 const router = require ('express').Router();
-const Workout = require ('../models').Workout;
+const Workout = require ('../models/workout');
 
-router.get('/workouts', (req, res) => {
-    Workout.find()
-        .then(dbWorkout => {
-            res.json(dbWorkout);
+router.get('/api/workouts', (req, res) => {
+    Workout.aggregate([
+        {
+            $addFields: {
+                totalDuration: {
+                    $sum: '$exercises.duration',
+                },
+            },
+        },
+    ])
+        .then((dbWorkouts) => {
+            res.json(dbWorkouts);
         })
-        .catch(err => {
-            res.status(400).json(err);
+        .catch((err) => {
+            res.json(err);
         });
     });
-router.get('/workouts/range', (req, res) => {
-    Workout.aggregate([{$addFields: {totalDuration: {$sum: '$exercises.duration'}}}]).then((dbWorkout) => {
-            res.json(dbWorkout);
+        
+router.get('/api/workouts/range', (req, res) => {
+    Workout.aggregate([
+        {
+            $addFields: {
+                totalDuration: {
+                    $sum: '$exercises.duration',
+                },
+            },
+        },
+    ])
+        .sort({ _id: -1 })
+        .limit(7)
+        .then((dbWorkouts) => {
+            console.log(dbWorkouts);
+            res.json(dbWorkouts);
         })
         .catch(err => {
-            res.status(400).json(err);
+            res.json(err);
         });
     });
-router.post('/workouts', (req, res) => {
-    Workout.create(req.body)
+
+router.post('/api/workouts', (req, res) => {
+    Workout.create({})
         .then((dbWorkout) => {
              res.json(dbWorkout);
          })
         .catch(err => {
-             res.status(400).json(err);
+             res.json(err);
          });
     });
 
-router.put('/workouts/:id', (req, res) => {
+router.put('/api/workouts/:id', ({ body, params }, req, res) => {
     Workout.findByIdAndUpdate(
-            { _id: req.params.id }, { exercises: req.body }
+        params.id,
+            { $push: { exercises: req.body } },
+            // runValidators check to see if new exercises meet schema requirements
+            { new: true, runValidators: true }
         )
         .then((dbWorkout) => {
             res.json(dbWorkout);
         })
         .catch(err => {
-            res.status(400).json(err);
+            res.json(err);
         });
 });
 
